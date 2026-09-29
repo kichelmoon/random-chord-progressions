@@ -30,39 +30,38 @@ def plot_mesh_torus(manifold, ax):
     
     
 def demo_geodesic_flow(manifold: HarmonicManifold):
+    """
+    Renders continuous geodesics for the closest chords relative to C-Major.
+    """
     c_major = HarmonicAlgebra.triad(0, is_major=True)
-    chord_distances = []
-    for chord, label in zip(all_chords, all_labels):
-        if chord == c_major:
-            continue
+    target_definitions = [
+        ("E Minor", HarmonicAlgebra.triad(4, is_major=False)), # (4, 7, 11)  -> Em
+        ("G Major", HarmonicAlgebra.triad(7, is_major=True)),  # (7, 11, 2)  -> G
+        ("C# Major", HarmonicAlgebra.triad(1, is_major=True))  # (1, 5, 8)   -> C#
+     ]
+    target_data = []
+    for label, chord in target_definitions:
         dist = manifold.chord_geodesic(c_major, chord)
-        chord_distances.append((dist, chord, label))
+        target_data.append((label, chord, dist))
+    fig = plt.figure(figsize=(12, 10), facecolor='#0b0f19')
+    ax = fig.add_subplot(111, projection='3d', facecolor='#0b0f19')
 
-    chord_distances.sort(key=lambda x: x[0])
-    closest_5 = chord_distances[:5]
-    
-    fig = plt.figure(figsize=(12, 10), facecolor=background_color)
-    ax = fig.add_subplot(111, projection='3d', facecolor=background_color)
-
-    # Plot Torus Mesh
     plot_mesh_torus(manifold, ax)
-
     c_center = manifold.chord_centroid(c_major)
-    ax.scatter(c_center[0], c_center[1], c_center[2], color='#00ffcc', s=160, zorder=10, label="C-Major (Origin)")
-    ax.text(c_center[0]*1.08, c_center[1]*1.08, c_center[2] + 0.15, "C-Major", color='#00ffcc', fontsize=12, fontweight='bold')
+    ax.scatter(c_center[0], c_center[1], c_center[2], color='#00ffcc', s=180, zorder=10, label="C Major (Origin)")
+    ax.text(c_center[0]*1.08, c_center[1]*1.08, c_center[2] + 0.15, "C Major", color='#00ffcc', fontsize=12, fontweight='bold')
 
-    colors = cm.spring(np.linspace(0.1, 0.9, 5))
+    colors = ['#00F0FF', '#FFB800', '#FF2A85']
 
-    for idx, (dist, chord, label) in enumerate(closest_5):
-        arc = manifold.geodesic_arc(c_major, chord)
-    
-        ax.plot(arc[:, 0], arc[:, 1], arc[:, 2], color=colors[idx], linewidth=3.0, alpha=0.9, label=f"{label} (d={dist:.2f})")
+    for idx, (label, chord, dist) in enumerate(target_data):
+        arc = manifold.geodesic_arc(c_major, chord, num_samples=60)
+        ax.plot(arc[:, 0], arc[:, 1], arc[:, 2], color=colors[idx], linewidth=3.2, alpha=0.9, label=f"{label} (d={dist:.2f})")
     
         target_pt = arc[-1]
-        ax.scatter(target_pt[0], target_pt[1], target_pt[2], color=colors[idx], s=90, depthshade=False, zorder=8)
-        ax.text(target_pt[0]*1.06, target_pt[1]*1.06, target_pt[2] + 0.1, f"{label}", color='white', fontsize=10, fontweight='bold')
+        ax.scatter(target_pt[0], target_pt[1], target_pt[2], color=colors[idx], s=100, depthshade=False, zorder=8)
+        ax.text(target_pt[0]*1.06, target_pt[1]*1.06, target_pt[2] + 0.12, f"{label}", color='white', fontsize=10, fontweight='bold')
 
-    ax.set_title("Demo 1: 5 Closest Chords to C-Major on $\mathbb{T}^2$ via geodesics", color='white', fontsize=14, pad=20)
+    ax.set_title("Demo 1: Geodesic Rays from C Major to E Minor, G Major & C# Major", color='white', fontsize=13, pad=20)
     ax.set_axis_off()
     ax.legend(loc='lower right', facecolor='#161b26', edgecolor='none', labelcolor='white', fontsize=10)
 
@@ -73,8 +72,7 @@ def demo_geodesic_flow(manifold: HarmonicManifold):
 
 def demo_surface_distance_heatmap(manifold: HarmonicManifold, reference_pitch: int = 0):
     """
-    Renders a continuous geodesic distance heatmap mapped directly onto the 
-    surface of the torus, showing harmonic proximity relative to C.
+    Renders a continuous geodesic distance heatmap mapped directly onto the surface of the torus, showing harmonic proximity relative to C.
     """
     fig = plt.figure(figsize=(12, 10), facecolor=background_color)
     ax = fig.add_subplot(111, projection='3d', facecolor=background_color)
