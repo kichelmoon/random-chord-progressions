@@ -56,7 +56,7 @@ class HarmonicManifold:
                 min_dist = dist
         return min_dist
 
-    def geodesic_arc(self, chord_A: tuple[int, ...], chord_B: tuple[int, ...], num_samples: int = 40) -> np.ndarray:
+    def geodesic_arc(self, chord_A: tuple[int, ...], chord_B: tuple[int, ...], num_samples: int = 80) -> np.ndarray:
         t1_a, t2_a = self.chord_centroid_angles(chord_A)
         t1_b, t2_b = self.chord_centroid_angles(chord_B)
 

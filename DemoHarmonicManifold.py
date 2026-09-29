@@ -10,6 +10,14 @@ background_color = '#0F172A'
 mesh_color = '#F1F5F9'
 accent_color = '#FFB800'
 
+all_chords = []
+all_labels = []
+for root in range(12):
+    all_chords.append(HarmonicAlgebra.triad(root, is_major=True))
+    all_labels.append(f"{HarmonicAlgebra.NOTE_NAMES[root]}")
+    all_chords.append(HarmonicAlgebra.triad(root, is_major=False))
+    all_labels.append(f"{HarmonicAlgebra.NOTE_NAMES[root]}m")
+
 
 def plot_mesh_torus(manifold, ax):
     u_dense = np.linspace(0, 2 * np.pi, 40)
@@ -22,49 +30,44 @@ def plot_mesh_torus(manifold, ax):
     
     
 def demo_geodesic_flow(manifold: HarmonicManifold):
-    """
-    Renders multiple geodesic trajectories starting from C-Major, flowing across the torus toward various relative and parallel keys.
-    """
+    c_major = HarmonicAlgebra.triad(0, is_major=True)
+    chord_distances = []
+    for chord, label in zip(all_chords, all_labels):
+        if chord == c_major:
+            continue
+        dist = manifold.chord_geodesic(c_major, chord)
+        chord_distances.append((dist, chord, label))
+
+    chord_distances.sort(key=lambda x: x[0])
+    closest_5 = chord_distances[:5]
+    
     fig = plt.figure(figsize=(12, 10), facecolor=background_color)
     ax = fig.add_subplot(111, projection='3d', facecolor=background_color)
 
     # Plot Torus Mesh
     plot_mesh_torus(manifold, ax)
 
-    # Plot Pitches as Flows
-    for p in range(12):
-        pt = manifold.embed_pitch(p)
-        ax.scatter(pt[0], pt[1], pt[2], color=accent_color, s=70, depthshade=False, zorder=5)
-        ax.text(pt[0]*1.12, pt[1]*1.12, pt[2]*1.12, f" {HarmonicAlgebra.NOTE_NAMES[p]}",
-                color=accent_color, fontsize=10, fontweight='bold')
+    c_center = manifold.chord_centroid(c_major)
+    ax.scatter(c_center[0], c_center[1], c_center[2], color='#00ffcc', s=160, zorder=10, label="C-Major (Origin)")
+    ax.text(c_center[0]*1.08, c_center[1]*1.08, c_center[2] + 0.15, "C-Major", color='#00ffcc', fontsize=12, fontweight='bold')
 
-    c_major_t1 = np.mean([manifold.pitch_to_angles(p)[0] for p in (0, 4, 7)]) #(0,4,7) = C-Major
-    c_major_t2 = np.mean([manifold.pitch_to_angles(p)[1] for p in (0, 4, 7)])
+    colors = cm.spring(np.linspace(0.1, 0.9, 5))
 
-    target_chords = [
-        ("A-Minor (R)", (9, 0, 4)),
-        ("E-Minor (L)", (4, 7, 11)),
-        ("C-Minor (P)", (0, 3, 7)),
-        ("G-Major (Dom)", (7, 11, 2)),
-        ("F-Major (Sub)", (5, 9, 0)),
-        ("F#-Major (Tritone)", (6, 10, 1))
-    ]
+    for idx, (dist, chord, label) in enumerate(closest_5):
+        arc = manifold.geodesic_arc(c_major, chord)
+    
+        ax.plot(arc[:, 0], arc[:, 1], arc[:, 2], color=colors[idx], linewidth=3.0, alpha=0.9, label=f"{label} (d={dist:.2f})")
+    
+        target_pt = arc[-1]
+        ax.scatter(target_pt[0], target_pt[1], target_pt[2], color=colors[idx], s=90, depthshade=False, zorder=8)
+        ax.text(target_pt[0]*1.06, target_pt[1]*1.06, target_pt[2] + 0.1, f"{label}", color='white', fontsize=10, fontweight='bold')
 
-    colors = cm.plasma(np.linspace(0.2, 0.9, len(target_chords)))
-
-    for idx, (name, chord) in enumerate(target_chords):
-        t1_b = np.mean([manifold.pitch_to_angles(p)[0] for p in chord])
-        t2_b = np.mean([manifold.pitch_to_angles(p)[1] for p in chord])
-
-        arc = manifold.geodesic_arc(c_major_t1, c_major_t2, t1_b, t2_b, num_samples=80)
-        ax.plot(arc[:, 0], arc[:, 1], arc[:, 2], color=colors[idx], linewidth=3, alpha=0.9, label=name)
-        ax.scatter(arc[-1, 0], arc[-1, 1], arc[-1, 2], color=colors[idx], s=90, depthshade=False)
-
-    ax.set_title("Demo 1: Harmonic Geodesic Flow from C-Major on $\mathbb{T}^2$", color='white', fontsize=14, pad=20)
+    ax.set_title("Demo 1: 5 Closest Chords to C-Major on $\mathbb{T}^2$ via geodesics", color='white', fontsize=14, pad=20)
     ax.set_axis_off()
-    ax.legend(loc='lower right', facecolor='#161b26', edgecolor='none', labelcolor='white')
+    ax.legend(loc='lower right', facecolor='#161b26', edgecolor='none', labelcolor='white', fontsize=10)
+
     plt.tight_layout()
-    plt.savefig("demos/demo1_geodesic_flow.png", dpi=300, facecolor=fig.get_facecolor())
+    plt.savefig("demos/demo_1_geodesic_flow.png", dpi=300, facecolor=fig.get_facecolor())
     plt.show()
 
 
@@ -110,7 +113,7 @@ def demo_surface_distance_heatmap(manifold: HarmonicManifold, reference_pitch: i
                  color='white', fontsize=14, pad=20)
     ax.set_axis_off()
     plt.tight_layout()
-    plt.savefig("demos/demo2_surface_heatmap.png", dpi=300, facecolor=fig.get_facecolor())
+    plt.savefig("demos/demo_2_surface_heatmap.png", dpi=300, facecolor=fig.get_facecolor())
     plt.show()
 
 
@@ -155,7 +158,7 @@ def demo_vector_field_flow(manifold: HarmonicManifold):
                  color='white', fontsize=14, pad=20)
     ax.set_axis_off()
     plt.tight_layout()
-    plt.savefig("demos/demo3_vector_field.png", dpi=300, facecolor=fig.get_facecolor())
+    plt.savefig("demos/demo_3_vector_field.png", dpi=300, facecolor=fig.get_facecolor())
     plt.show()
 
 
