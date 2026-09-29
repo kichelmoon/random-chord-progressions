@@ -64,7 +64,7 @@ def demo_geodesic_flow(manifold: HarmonicManifold):
     ax.set_axis_off()
     ax.legend(loc='lower right', facecolor='#161b26', edgecolor='none', labelcolor='white')
     plt.tight_layout()
-    plt.savefig("demo1_geodesic_flow.png", dpi=300, facecolor=fig.get_facecolor())
+    plt.savefig("demos/demo1_geodesic_flow.png", dpi=300, facecolor=fig.get_facecolor())
     plt.show()
 
 
@@ -110,7 +110,7 @@ def demo_surface_distance_heatmap(manifold: HarmonicManifold, reference_pitch: i
                  color='white', fontsize=14, pad=20)
     ax.set_axis_off()
     plt.tight_layout()
-    plt.savefig("demo2_surface_heatmap.png", dpi=300, facecolor=fig.get_facecolor())
+    plt.savefig("demos/demo2_surface_heatmap.png", dpi=300, facecolor=fig.get_facecolor())
     plt.show()
 
 
@@ -155,7 +155,7 @@ def demo_vector_field_flow(manifold: HarmonicManifold):
                  color='white', fontsize=14, pad=20)
     ax.set_axis_off()
     plt.tight_layout()
-    plt.savefig("demo3_vector_field.png", dpi=300, facecolor=fig.get_facecolor())
+    plt.savefig("demos/demo3_vector_field.png", dpi=300, facecolor=fig.get_facecolor())
     plt.show()
 
 
